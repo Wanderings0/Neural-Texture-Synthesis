@@ -4,7 +4,8 @@ import torch.nn.functional as F
 import torchvision.models as models
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader, SubsetRandomSampler
-
+from tqdm import tqdm
+import time, sys
 
 
 def rescale_weights(model, dataloader):
@@ -15,10 +16,12 @@ def rescale_weights(model, dataloader):
                 # 初始化累加器
                 activation_sum = 0
                 num_activations = 0
-
-                for inputs, _ in dataloader:
+                
+                print('Rescaling weights for layer {}...'.format(i))
+                sys.stdout.flush()
+                for inputs, _ in tqdm(dataloader):
                     # 仅计算当前层的前向传播结果
-                    x = inputs.cuda()
+                    x = inputs.cuda(0)
                     for j in range(i + 1):
                         x = model.features[j](x)
                     
@@ -42,14 +45,17 @@ def rescale_weights(model, dataloader):
 
 def main():
     # load the pretrained model
-    vgg19_model = models.vgg19(pretrained=True).cuda()
+    vgg19_model = models.vgg19(weights='DEFAULT').cuda(0)
 
     for i, layer in enumerate(vgg19_model.features):
         if isinstance(layer, nn.MaxPool2d):
             vgg19_model.features[i] = nn.AvgPool2d(kernel_size=2, stride=2, padding=0)
-    
+
+    print('VGG19 model with maxpooling replaced with average pooling:')
+    print(vgg19_model)
+
     # 指定ImageNet数据集的路径
-    imagenet_data_path = '/path/to/imagenet'
+    imagenet_data_path = '/lustre/dataset/imagenet/'
 
     # 定义预处理转换
     transform = transforms.Compose([
@@ -61,9 +67,9 @@ def main():
 
     # 加载整个ImageNet数据集
     full_dataset = datasets.ImageFolder(root=imagenet_data_path, transform=transform)
-
+    print(len(full_dataset))
     # 选择子集：这里我们随机选择一定比例的数据作为子集
-    subset_size = len(full_dataset) // 10  # 假设我们只取数据集的1/10
+    subset_size = len(full_dataset) // 3000  # 假设我们只取数据集的1/3000
     indices = torch.randperm(len(full_dataset)).tolist()
     subset_indices = indices[:subset_size]
 
@@ -71,10 +77,21 @@ def main():
     sampler = SubsetRandomSampler(subset_indices)
 
     # 创建DataLoader来加载数据
-    batch_size = 32
+    batch_size = 128
     dataloader = DataLoader(full_dataset, batch_size=batch_size, sampler=sampler)
+    print(len(dataloader))
+    # flush the stdout buffer
+    sys.stdout.flush()
 
     rescale_weights(vgg19_model, dataloader)
 
     # save the model
     torch.save(vgg19_model.state_dict(), 'rescaled_vgg19_weights.pth')
+    print('Model saved with path: rescaled_vgg19_weights.pth')
+
+if __name__ == '__main__':
+    # record the running time
+    start_time = time.time()
+    main()
+    end_time = time.time()
+    print('Running time: {:.2f} seconds.'.format(end_time - start_time))
