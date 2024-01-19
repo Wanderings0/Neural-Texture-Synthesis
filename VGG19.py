@@ -45,105 +45,105 @@ class VGG19(nn.Module):
 
         
         self.conv1_1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
-        self.relu1_1 = nn.ReLU(inplace=True)
+        self.relu1_1 = nn.ReLU()
         self.conv1_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
-        self.relu1_2 = nn.ReLU(inplace=True)
+        self.relu1_2 = nn.ReLU()
         self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv2_1 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
-        self.relu2_1 = nn.ReLU(inplace=True)
+        self.relu2_1 = nn.ReLU()
         self.conv2_2 = nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
-        self.relu2_2 = nn.ReLU(inplace=True)
+        self.relu2_2 = nn.ReLU()
         self.maxpool2 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv3_1 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_1 = nn.ReLU(inplace=True)
+        self.relu3_1 = nn.ReLU()
         self.conv3_2 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_2 = nn.ReLU(inplace=True)
+        self.relu3_2 = nn.ReLU()
         self.conv3_3 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_3 = nn.ReLU(inplace=True)
+        self.relu3_3 = nn.ReLU()
         self.conv3_4 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_4 = nn.ReLU(inplace=True)
+        self.relu3_4 = nn.ReLU()
         self.maxpool3 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv4_1 = nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_1 = nn.ReLU(inplace=True)
+        self.relu4_1 = nn.ReLU()
         self.conv4_2 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_2 = nn.ReLU(inplace=True)
+        self.relu4_2 = nn.ReLU()
         self.conv4_3 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_3 = nn.ReLU(inplace=True)
+        self.relu4_3 = nn.ReLU()
         self.conv4_4 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_4 = nn.ReLU(inplace=True)
+        self.relu4_4 = nn.ReLU()
         self.maxpool4 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv5_1 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_1 = nn.ReLU(inplace=True)
+        self.relu5_1 = nn.ReLU()
         self.conv5_2 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_2 = nn.ReLU(inplace=True)
+        self.relu5_2 = nn.ReLU()
         self.conv5_3 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_3 = nn.ReLU(inplace=True)
+        self.relu5_3 = nn.ReLU()
         self.conv5_4 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_4 = nn.ReLU(inplace=True)
+        self.relu5_4 = nn.ReLU()
         self.maxpool5 = nn.MaxPool2d(kernel_size=2, stride=2)
 
     def forward(self, x:torch.Tensor):
-
-        x = self.conv1_1(x)
-        self.features_maps["conv1_1"] = x.clone()
+        temp = x.clone()
+        x = self.conv1_1(temp)
+        self.features_maps["conv1_1"] = x
         x = self.relu1_1(x)
         x = self.conv1_2(x)
         x = self.relu1_2(x)
         x = self.maxpool1(x)
-        self.features_maps["pool1"] = x.clone()
+        self.features_maps["pool1"] = x
 
         x = self.conv2_1(x)
         x = self.relu2_1(x)
         x = self.conv2_2(x)
         x = self.relu2_2(x)
         x = self.maxpool2(x)
-        self.features_maps["pool2"] = x.clone()
+        self.features_maps["pool2"] = x
 
         x = self.conv3_1(x)
         x = self.relu3_1(x)
         x = self.conv3_2(x)
-        # self.features_maps["conv3_2"] = x.clone()
+        # self.features_maps["conv3_2"] = x
         x = self.relu3_2(x)
         x = self.conv3_3(x)
-        # self.features_maps["conv3_3"] = x.clone()
+        # self.features_maps["conv3_3"] = x
         x = self.relu3_3(x)
         x = self.conv3_4(x)
-        # self.features_maps["conv3_4"] = x.clone()
+        # self.features_maps["conv3_4"] = x
         x = self.relu3_4(x)
         x = self.maxpool3(x)
-        self.features_maps["pool3"] = x.clone()
+        self.features_maps["pool3"] = x
 
         x = self.conv4_1(x)
         x = self.relu4_1(x)
         x = self.conv4_2(x)
-        # self.features_maps["conv4_2"] = x.clone()
+        # self.features_maps["conv4_2"] = x
         x = self.relu4_2(x)
         x = self.conv4_3(x)
-        # self.features_maps["conv4_3"] = x.xlone()
+        # self.features_maps["conv4_3"] = x
         x = self.relu4_3(x)
         x = self.conv4_4(x)
-        # self.features_maps["conv4_4"] = x.clone()
+        # self.features_maps["conv4_4"] = x
         x = self.relu4_4(x)
         x = self.maxpool4(x)
-        self.features_maps["pool4"] = x.clone()
+        self.features_maps["pool4"] = x
         
         x = self.conv5_1(x)
         x = self.relu5_1(x)
         x = self.conv5_2(x)
-        # self.features_maps["conv5_2"] = x.clone()
+        # self.features_maps["conv5_2"] = x
         x = self.relu5_2(x)
         x = self.conv5_3(x)
-        # self.features_maps["conv5_3"] = x.clone()
+        # self.features_maps["conv5_3"] = x
         x = self.relu5_3(x)
         x = self.conv5_4(x)
-        # self.features_maps["conv5_4"] = x.clone()
+        # self.features_maps["conv5_4"] = x
         x = self.relu5_4(x)
         x = self.maxpool5(x)
-        self.features_maps["pool5"] = x.clone()
+        self.features_maps["pool5"] = x
 
         return x
 
@@ -168,108 +168,112 @@ class modifiedVGG19(nn.Module):
 
         
         self.conv1_1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
-        self.relu1_1 = nn.ReLU(inplace=True)
+        self.relu1_1 = nn.ReLU()
         self.conv1_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
-        self.relu1_2 = nn.ReLU(inplace=True)
+        self.relu1_2 = nn.ReLU()
         self.avgpool1 = nn.AvgPool2d(kernel_size=2, stride=2)
 
         self.conv2_1 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
-        self.relu2_1 = nn.ReLU(inplace=True)
+        self.relu2_1 = nn.ReLU()
         self.conv2_2 = nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
-        self.relu2_2 = nn.ReLU(inplace=True)
+        self.relu2_2 = nn.ReLU()
         self.avgpool2 = nn.AvgPool2d(kernel_size=2, stride=2)
 
         self.conv3_1 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_1 = nn.ReLU(inplace=True)
+        self.relu3_1 = nn.ReLU()
         self.conv3_2 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_2 = nn.ReLU(inplace=True)
+        self.relu3_2 = nn.ReLU()
         self.conv3_3 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_3 = nn.ReLU(inplace=True)
+        self.relu3_3 = nn.ReLU()
         self.conv3_4 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_4 = nn.ReLU(inplace=True)
+        self.relu3_4 = nn.ReLU()
         self.avgpool3 = nn.AvgPool2d(kernel_size=2, stride=2)
 
         self.conv4_1 = nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_1 = nn.ReLU(inplace=True)
+        self.relu4_1 = nn.ReLU()
         self.conv4_2 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_2 = nn.ReLU(inplace=True)
+        self.relu4_2 = nn.ReLU()
         self.conv4_3 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_3 = nn.ReLU(inplace=True)
+        self.relu4_3 = nn.ReLU()
         self.conv4_4 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_4 = nn.ReLU(inplace=True)
+        self.relu4_4 = nn.ReLU()
         self.avgpool4 = nn.AvgPool2d(kernel_size=2, stride=2)
 
         self.conv5_1 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_1 = nn.ReLU(inplace=True)
+        self.relu5_1 = nn.ReLU()
         self.conv5_2 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_2 = nn.ReLU(inplace=True)
+        self.relu5_2 = nn.ReLU()
         self.conv5_3 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_3 = nn.ReLU(inplace=True)
+        self.relu5_3 = nn.ReLU()
         self.conv5_4 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_4 = nn.ReLU(inplace=True)
+        self.relu5_4 = nn.ReLU()
         self.avgpool5 = nn.AvgPool2d(kernel_size=2, stride=2)
 
     def forward(self, x:torch.Tensor):
-
-        x = self.conv1_1(x)
-        self.features_maps["conv1_1"] = x.clone()
+        temp = x.clone()
+        x = self.conv1_1(temp)
+        self.features_maps["conv1_1"] = x
         x = self.relu1_1(x)
         x = self.conv1_2(x)
         x = self.relu1_2(x)
         x = self.avgpool1(x)
-        self.features_maps["pool1"] = x.clone()
+        self.features_maps["pool1"] = x
 
         x = self.conv2_1(x)
         x = self.relu2_1(x)
         x = self.conv2_2(x)
-        # self.features_maps["conv2_2"] = x.clone()
+        # self.features_maps["conv2_2"] = x
         x = self.relu2_2(x)
         x = self.avgpool2(x)
-        self.features_maps["pool2"] = x.clone()
+        self.features_maps["pool2"] = x
 
         x = self.conv3_1(x)
         x = self.relu3_1(x)
         x = self.conv3_2(x)
-        # self.features_maps["conv3_2"] = x.clone()
+        # self.features_maps["conv3_2"] = x
         x = self.relu3_2(x)
         x = self.conv3_3(x)
-        # self.features_maps["conv3_3"] = x.clone()
+        # self.features_maps["conv3_3"] = x
         x = self.relu3_3(x)
         x = self.conv3_4(x)
-        # self.features_maps["conv3_4"] = x.clone()
+        # self.features_maps["conv3_4"] = x
         x = self.relu3_4(x)
         x = self.avgpool3(x)
-        self.features_maps["pool3"] = x.clone()
+        self.features_maps["pool3"] = x
 
         x = self.conv4_1(x)
         x = self.relu4_1(x)
         x = self.conv4_2(x)
-        # self.features_maps["conv4_2"] = x.clone()
+        # self.features_maps["conv4_2"] = x
         x = self.relu4_2(x)
         x = self.conv4_3(x)
-        # self.features_maps["conv4_3"] = x.clone()
+        # self.features_maps["conv4_3"] = x
         x = self.relu4_3(x)
         x = self.conv4_4(x)
-        # self.features_maps["conv4_4"] = x.clone()
+        # self.features_maps["conv4_4"] = x
         x = self.relu4_4(x)
         x = self.avgpool4(x)
-        self.features_maps["pool4"] = x.clone()
+        self.features_maps["pool4"] = x
         
         x = self.conv5_1(x)
         x = self.relu5_1(x)
         x = self.conv5_2(x)
-        # self.features_maps["conv5_2"] = x.clone()
+        # self.features_maps["conv5_2"] = x
         x = self.relu5_2(x)
         x = self.conv5_3(x)
-        # self.features_maps["conv5_3"] = x.clone()
+        # self.features_maps["conv5_3"] = x
         x = self.relu5_3(x)
         x = self.conv5_4(x)
-        # self.features_maps["conv5_4"] = x.clone()
+        # self.features_maps["conv5_4"] = x
         x = self.relu5_4(x)
         x = self.avgpool5(x)
-        self.features_maps["pool5"] = x.clone()
+        self.features_maps["pool5"] = x
 
         return x
+    
+    def reset(self):
+        self.features_maps = dict()
+        
         
 
     
