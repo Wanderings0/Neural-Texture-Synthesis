@@ -6,9 +6,11 @@ get the feature maps by calling model.get_feature_maps()
 
 example:
     # modified=True means the model is rescaled, modified=False means the model is original.
-    model = get_vgg19_model(modified=True) 
+    model = get_vgg19_model(modified=True)
 
-    feature_maps = model.get_feature_maps() 
+    feature_maps = model.features_maps
+
+    gram_matrix = model.get_gram()
 '''
 
 import torch
@@ -84,8 +86,8 @@ class VGG19(nn.Module):
     def forward(self, x: torch.Tensor):
         # reset feature maps at the beginning of forward pass
         self.features_maps = dict()
-
-        x = self.conv1_1(x)
+        temp = x.clone()
+        x = self.conv1_1(temp)
         x = self.relu1_1(x)
         self.features_maps["conv1_1"] = x
         x = self.conv1_2(x)
@@ -149,8 +151,7 @@ class VGG19(nn.Module):
         self.features_maps["pool5"] = x
         
         return x
-    def get_feature_maps(self):
-        return self.features_maps
+    
 
 
 class modifiedVGG19(nn.Module):
@@ -208,8 +209,8 @@ class modifiedVGG19(nn.Module):
     def forward(self, x: torch.Tensor):
         # reset feature maps at the beginning of forward pass
         self.features_maps = dict()
-
-        x = self.conv1_1(x)
+        temp = x.clone()
+        x = self.conv1_1(temp)
         x = self.relu1_1(x)
         self.features_maps["conv1_1"] = x
         x = self.conv1_2(x)
@@ -273,14 +274,7 @@ class modifiedVGG19(nn.Module):
         self.features_maps["pool5"] = x
         
         return x
-    def get_feature_maps(self):
-        # for key in self.features_maps:
-        #     feature_map = self.features_maps[key]
-        #     channel, height, width = feature_map.size()
-        #     feature_map = feature_map.view(channel, height * width)
-        #     self.features_maps[key] = feature_map
 
-        return self.features_maps
 
         
 
@@ -397,6 +391,7 @@ def main():
     torch.save(vgg19_model.state_dict(), model_path)
     print(f'Model saved with path: {model_path}')
 
+
 if __name__ == '__main__':
     # record the running time
     # start_time = time.time()
@@ -405,10 +400,8 @@ if __name__ == '__main__':
     # print('Running time: {:.2f} seconds.'.format(end_time - start_time))
     model = get_vgg19_model(modified=True)
     # 随机生成图片并输入模型
-    x = torch.rand(1, 3, 224, 224).to(device)
+    x = torch.rand(1, 3, 256, 256).to(device)
     y = model(x)
     # 获取特征图
-    feature_maps = model.get_feature_maps()
-    # print(feature_maps['conv1_1'].shape)
-    for key in feature_maps:
-        print(key, feature_maps[key].shape)
+    feature_maps = model.features_maps
+    print(feature_maps['conv1_1'].shape)
