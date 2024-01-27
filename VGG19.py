@@ -8,7 +8,6 @@ example:
     # modified=True means the model is rescaled, modified=False means the model is original.
     model = get_vgg19_model(modified=True) 
 
-    # the shape of each element of feature maps is [batch_size, channel, height, width] 
     feature_maps = model.get_feature_maps() 
 '''
 
@@ -82,73 +81,73 @@ class VGG19(nn.Module):
         self.relu5_4 = nn.ReLU()
         self.maxpool5 = nn.MaxPool2d(kernel_size=2, stride=2)
 
-    def forward(self, x:torch.Tensor):
-
-        # Reset feature maps at the beginning of forward pass
+    def forward(self, x: torch.Tensor):
+        # reset feature maps at the beginning of forward pass
         self.features_maps = dict()
+
         x = self.conv1_1(x)
-        self.features_maps["conv1_1"] = x
         x = self.relu1_1(x)
+        self.features_maps["conv1_1"] = x
         x = self.conv1_2(x)
-        self.features_maps["conv1_2"] = x
         x = self.relu1_2(x)
+        self.features_maps["conv1_2"] = x
         x = self.maxpool1(x)
         self.features_maps["pool1"] = x
-
+        
         x = self.conv2_1(x)
-        self.features_maps["conv2_1"] = x
         x = self.relu2_1(x)
+        self.features_maps["conv2_1"] = x
         x = self.conv2_2(x)
-        self.features_maps["conv2_2"] = x
         x = self.relu2_2(x)
+        self.features_maps["conv2_2"] = x
         x = self.maxpool2(x)
         self.features_maps["pool2"] = x
-
+        
         x = self.conv3_1(x)
-        self.features_maps["conv3_1"] = x
         x = self.relu3_1(x)
+        self.features_maps["conv3_1"] = x
         x = self.conv3_2(x)
-        self.features_maps["conv3_2"] = x
         x = self.relu3_2(x)
+        self.features_maps["conv3_2"] = x
         x = self.conv3_3(x)
-        self.features_maps["conv3_3"] = x
         x = self.relu3_3(x)
+        self.features_maps["conv3_3"] = x
         x = self.conv3_4(x)
-        self.features_maps["conv3_4"] = x
         x = self.relu3_4(x)
+        self.features_maps["conv3_4"] = x
         x = self.maxpool3(x)
         self.features_maps["pool3"] = x
-
+        
         x = self.conv4_1(x)
-        self.features_maps["conv4_1"] = x
         x = self.relu4_1(x)
+        self.features_maps["conv4_1"] = x
         x = self.conv4_2(x)
-        self.features_maps["conv4_2"] = x
         x = self.relu4_2(x)
+        self.features_maps["conv4_2"] = x
         x = self.conv4_3(x)
-        self.features_maps["conv4_3"] = x
         x = self.relu4_3(x)
+        self.features_maps["conv4_3"] = x
         x = self.conv4_4(x)
-        self.features_maps["conv4_4"] = x
         x = self.relu4_4(x)
+        self.features_maps["conv4_4"] = x
         x = self.maxpool4(x)
         self.features_maps["pool4"] = x
         
         x = self.conv5_1(x)
-        self.features_maps["conv5_1"] = x
         x = self.relu5_1(x)
+        self.features_maps["conv5_1"] = x
         x = self.conv5_2(x)
-        self.features_maps["conv5_2"] = x
         x = self.relu5_2(x)
+        self.features_maps["conv5_2"] = x
         x = self.conv5_3(x)
-        self.features_maps["conv5_3"] = x
         x = self.relu5_3(x)
+        self.features_maps["conv5_3"] = x
         x = self.conv5_4(x)
-        self.features_maps["conv5_4"] = x
         x = self.relu5_4(x)
+        self.features_maps["conv5_4"] = x
         x = self.maxpool5(x)
         self.features_maps["pool5"] = x
-
+        
         return x
     def get_feature_maps(self):
         return self.features_maps
@@ -206,76 +205,83 @@ class modifiedVGG19(nn.Module):
         self.relu5_4 = nn.ReLU()
         self.avgpool5 = nn.AvgPool2d(kernel_size=2, stride=2)
 
-    def forward(self, x:torch.Tensor):
-        # Reset feature maps at the beginning of forward pass
+    def forward(self, x: torch.Tensor):
+        # reset feature maps at the beginning of forward pass
         self.features_maps = dict()
-        
+
         x = self.conv1_1(x)
-        self.features_maps["conv1_1"] = x
         x = self.relu1_1(x)
+        self.features_maps["conv1_1"] = x
         x = self.conv1_2(x)
-        self.features_maps["conv1_2"] = x
         x = self.relu1_2(x)
+        self.features_maps["conv1_2"] = x
         x = self.avgpool1(x)
         self.features_maps["pool1"] = x
-
+        
         x = self.conv2_1(x)
-        self.features_maps["conv2_1"] = x
         x = self.relu2_1(x)
+        self.features_maps["conv2_1"] = x
         x = self.conv2_2(x)
-        self.features_maps["conv2_2"] = x
         x = self.relu2_2(x)
+        self.features_maps["conv2_2"] = x
         x = self.avgpool2(x)
         self.features_maps["pool2"] = x
-
+        
         x = self.conv3_1(x)
-        self.features_maps["conv3_1"] = x
         x = self.relu3_1(x)
+        self.features_maps["conv3_1"] = x
         x = self.conv3_2(x)
-        self.features_maps["conv3_2"] = x
         x = self.relu3_2(x)
+        self.features_maps["conv3_2"] = x
         x = self.conv3_3(x)
-        self.features_maps["conv3_3"] = x
         x = self.relu3_3(x)
+        self.features_maps["conv3_3"] = x
         x = self.conv3_4(x)
-        self.features_maps["conv3_4"] = x
         x = self.relu3_4(x)
+        self.features_maps["conv3_4"] = x
         x = self.avgpool3(x)
         self.features_maps["pool3"] = x
-
+        
         x = self.conv4_1(x)
-        self.features_maps["conv4_1"] = x
         x = self.relu4_1(x)
+        self.features_maps["conv4_1"] = x
         x = self.conv4_2(x)
-        self.features_maps["conv4_2"] = x
         x = self.relu4_2(x)
+        self.features_maps["conv4_2"] = x
         x = self.conv4_3(x)
-        self.features_maps["conv4_3"] = x
         x = self.relu4_3(x)
+        self.features_maps["conv4_3"] = x
         x = self.conv4_4(x)
-        self.features_maps["conv4_4"] = x
         x = self.relu4_4(x)
+        self.features_maps["conv4_4"] = x
         x = self.avgpool4(x)
         self.features_maps["pool4"] = x
         
         x = self.conv5_1(x)
-        self.features_maps["conv5_1"] = x
         x = self.relu5_1(x)
+        self.features_maps["conv5_1"] = x
         x = self.conv5_2(x)
-        self.features_maps["conv5_2"] = x
         x = self.relu5_2(x)
+        self.features_maps["conv5_2"] = x
         x = self.conv5_3(x)
-        self.features_maps["conv5_3"] = x
         x = self.relu5_3(x)
+        self.features_maps["conv5_3"] = x
         x = self.conv5_4(x)
-        self.features_maps["conv5_4"] = x
         x = self.relu5_4(x)
+        self.features_maps["conv5_4"] = x
         x = self.avgpool5(x)
         self.features_maps["pool5"] = x
-
+        
         return x
     def get_feature_maps(self):
+        # for key in self.features_maps:
+        #     feature_map = self.features_maps[key]
+        #     channel, height, width = feature_map.size()
+        #     feature_map = feature_map.view(channel, height * width)
+        #     self.features_maps[key] = feature_map
+
         return self.features_maps
+
         
 
 
