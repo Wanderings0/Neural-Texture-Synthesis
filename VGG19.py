@@ -9,8 +9,6 @@ example:
     model = get_vgg19_model(modified=True)
 
     feature_maps = model.features_maps
-
-    gram_matrix = model.get_gram()
 '''
 
 import torch
@@ -45,13 +43,13 @@ class VGG19(nn.Module):
         self.relu1_1 = nn.ReLU()
         self.conv1_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
         self.relu1_2 = nn.ReLU()
-        self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv2_1 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
         self.relu2_1 = nn.ReLU()
         self.conv2_2 = nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
         self.relu2_2 = nn.ReLU()
-        self.maxpool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv3_1 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1)
         self.relu3_1 = nn.ReLU()
@@ -61,7 +59,7 @@ class VGG19(nn.Module):
         self.relu3_3 = nn.ReLU()
         self.conv3_4 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
         self.relu3_4 = nn.ReLU()
-        self.maxpool3 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv4_1 = nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1)
         self.relu4_1 = nn.ReLU()
@@ -71,7 +69,7 @@ class VGG19(nn.Module):
         self.relu4_3 = nn.ReLU()
         self.conv4_4 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
         self.relu4_4 = nn.ReLU()
-        self.maxpool4 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.conv5_1 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
         self.relu5_1 = nn.ReLU()
@@ -81,130 +79,7 @@ class VGG19(nn.Module):
         self.relu5_3 = nn.ReLU()
         self.conv5_4 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
         self.relu5_4 = nn.ReLU()
-        self.maxpool5 = nn.MaxPool2d(kernel_size=2, stride=2)
-
-    def forward(self, x: torch.Tensor):
-        # reset feature maps at the beginning of forward pass
-        self.features_maps = dict()
-        temp = x.clone()
-        x = self.conv1_1(temp)
-        x = self.relu1_1(x)
-        self.features_maps["conv1_1"] = x
-        x = self.conv1_2(x)
-        x = self.relu1_2(x)
-        # self.features_maps["conv1_2"] = x
-        x = self.maxpool1(x)
-        self.features_maps["pool1"] = x
-        
-        x = self.conv2_1(x)
-        x = self.relu2_1(x)
-        # self.features_maps["conv2_1"] = x
-        x = self.conv2_2(x)
-        x = self.relu2_2(x)
-        # self.features_maps["conv2_2"] = x
-        x = self.maxpool2(x)
-        self.features_maps["pool2"] = x
-        
-        x = self.conv3_1(x)
-        x = self.relu3_1(x)
-        # self.features_maps["conv3_1"] = x
-        x = self.conv3_2(x)
-        x = self.relu3_2(x)
-        # self.features_maps["conv3_2"] = x
-        x = self.conv3_3(x)
-        x = self.relu3_3(x)
-        # self.features_maps["conv3_3"] = x
-        x = self.conv3_4(x)
-        x = self.relu3_4(x)
-        # self.features_maps["conv3_4"] = x
-        x = self.maxpool3(x)
-        self.features_maps["pool3"] = x
-        
-        x = self.conv4_1(x)
-        x = self.relu4_1(x)
-        # self.features_maps["conv4_1"] = x
-        x = self.conv4_2(x)
-        x = self.relu4_2(x)
-        # self.features_maps["conv4_2"] = x
-        x = self.conv4_3(x)
-        x = self.relu4_3(x)
-        # self.features_maps["conv4_3"] = x
-        x = self.conv4_4(x)
-        x = self.relu4_4(x)
-        # self.features_maps["conv4_4"] = x
-        x = self.maxpool4(x)
-        self.features_maps["pool4"] = x
-        
-        x = self.conv5_1(x)
-        x = self.relu5_1(x)
-        # self.features_maps["conv5_1"] = x
-        x = self.conv5_2(x)
-        x = self.relu5_2(x)
-        # self.features_maps["conv5_2"] = x
-        x = self.conv5_3(x)
-        x = self.relu5_3(x)
-        # self.features_maps["conv5_3"] = x
-        x = self.conv5_4(x)
-        x = self.relu5_4(x)
-        # self.features_maps["conv5_4"] = x
-        x = self.maxpool5(x)
-        self.features_maps["pool5"] = x
-        
-        return x
-    
-
-
-class modifiedVGG19(nn.Module):
-    '''
-    VGG19 model with maxpooling replaced with average pooling and without 3 FC layers, 16 conv layers in total
-    '''
-    def __init__(self):
-        super(modifiedVGG19, self).__init__()
-
-        self.features_maps = dict()
-
-        
-        self.conv1_1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
-        self.relu1_1 = nn.ReLU()
-        self.conv1_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
-        self.relu1_2 = nn.ReLU()
-        self.avgpool1 = nn.AvgPool2d(kernel_size=2, stride=2)
-
-        self.conv2_1 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
-        self.relu2_1 = nn.ReLU()
-        self.conv2_2 = nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
-        self.relu2_2 = nn.ReLU()
-        self.avgpool2 = nn.AvgPool2d(kernel_size=2, stride=2)
-
-        self.conv3_1 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_1 = nn.ReLU()
-        self.conv3_2 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_2 = nn.ReLU()
-        self.conv3_3 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_3 = nn.ReLU()
-        self.conv3_4 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.relu3_4 = nn.ReLU()
-        self.avgpool3 = nn.AvgPool2d(kernel_size=2, stride=2)
-
-        self.conv4_1 = nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_1 = nn.ReLU()
-        self.conv4_2 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_2 = nn.ReLU()
-        self.conv4_3 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_3 = nn.ReLU()
-        self.conv4_4 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu4_4 = nn.ReLU()
-        self.avgpool4 = nn.AvgPool2d(kernel_size=2, stride=2)
-
-        self.conv5_1 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_1 = nn.ReLU()
-        self.conv5_2 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_2 = nn.ReLU()
-        self.conv5_3 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_3 = nn.ReLU()
-        self.conv5_4 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.relu5_4 = nn.ReLU()
-        self.avgpool5 = nn.AvgPool2d(kernel_size=2, stride=2)
+        self.pool5 = nn.MaxPool2d(kernel_size=2, stride=2)
 
     def forward(self, x: torch.Tensor):
         # reset feature maps at the beginning of forward pass
@@ -216,7 +91,7 @@ class modifiedVGG19(nn.Module):
         x = self.conv1_2(x)
         x = self.relu1_2(x)
         self.features_maps["conv1_2"] = x
-        x = self.avgpool1(x)
+        x = self.pool1(x)
         self.features_maps["pool1"] = x
         
         x = self.conv2_1(x)
@@ -225,7 +100,7 @@ class modifiedVGG19(nn.Module):
         x = self.conv2_2(x)
         x = self.relu2_2(x)
         self.features_maps["conv2_2"] = x
-        x = self.avgpool2(x)
+        x = self.pool2(x)
         self.features_maps["pool2"] = x
         
         x = self.conv3_1(x)
@@ -240,7 +115,7 @@ class modifiedVGG19(nn.Module):
         x = self.conv3_4(x)
         x = self.relu3_4(x)
         self.features_maps["conv3_4"] = x
-        x = self.avgpool3(x)
+        x = self.pool3(x)
         self.features_maps["pool3"] = x
         
         x = self.conv4_1(x)
@@ -255,7 +130,7 @@ class modifiedVGG19(nn.Module):
         x = self.conv4_4(x)
         x = self.relu4_4(x)
         self.features_maps["conv4_4"] = x
-        x = self.avgpool4(x)
+        x = self.pool4(x)
         self.features_maps["pool4"] = x
         
         x = self.conv5_1(x)
@@ -270,19 +145,15 @@ class modifiedVGG19(nn.Module):
         x = self.conv5_4(x)
         x = self.relu5_4(x)
         self.features_maps["conv5_4"] = x
-        x = self.avgpool5(x)
+        x = self.pool5(x)
         self.features_maps["pool5"] = x
         
         return x
-
+    
 
         
-
-
-
-
     
-def get_vgg19_model(modified=True):
+def get_vgg19_model(pool='avg'):
 
     layer_map = {
         'conv1_1.weight': 'features.0.weight',
@@ -319,161 +190,66 @@ def get_vgg19_model(modified=True):
         'conv5_4.bias': 'features.34.bias',
     }
 
-    if modified:
-        # load a VGG19 model with rescaled weights ,replace the maxpooling with average pooling and without FC layers
-        vgg19_model = modifiedVGG19()
-        
-        rescaled_weights = torch.load(model_path,map_location=device)
 
-        adapted_weights = {}
+    vgg19_model = VGG19()
+    pretrained_weights = models.vgg19(pretrained=True).state_dict()
+    adapted_weights = {}
 
-        for key in vgg19_model.state_dict().keys():
-            adapted_weights[key] = rescaled_weights[layer_map[key]]
-        print(adapted_weights.keys())
-        vgg19_model.load_state_dict(adapted_weights)
+    for key in vgg19_model.state_dict().keys():
+        adapted_weights[key] = pretrained_weights[layer_map[key]]
+    # print(adapted_weights.keys())
+    vgg19_model.load_state_dict(adapted_weights)
 
-    else:
-        # load a VGG19 model with pretrained weights without FC layers
-        vgg19_model = VGG19()
-        pretrained_weights = models.vgg19(pretrained=True).state_dict()
-        adapted_weights = {}
+    if pool == 'avg':
+        # replace maxpooling with average pooling
+        for name, module in vgg19_model.named_modules():
+            if isinstance(module, nn.MaxPool2d):
+                vgg19_model._modules[name] = nn.AvgPool2d(kernel_size=2, stride=2)
 
-        for key in vgg19_model.state_dict().keys():
-            adapted_weights[key] = pretrained_weights[layer_map[key]]
-        print(adapted_weights.keys())
-        vgg19_model.load_state_dict(adapted_weights)
-        
         
     return vgg19_model
 
-# def rescale_weights(model, dataloader):
-#     model.eval()
-#     with torch.no_grad():
-#         for i, layer in enumerate(model.features):
-#             if isinstance(layer, nn.Conv2d):
-#                 # 初始化累加器
-#                 activation_sum = 0
-#                 num_activations = 0
-                
-#                 print('Rescaling weights for layer {}...'.format(i))
-#                 sys.stdout.flush()
-#                 for inputs, _ in tqdm(dataloader):
-#                     # 仅计算当前层的前向传播结果
-#                     x = inputs.to(device)
-#                     for j in range(i + 1):
-#                         x = model.features[j](x)
-                    
-#                     # 累加激活值的总和
-#                     activation_sum += x.sum().item()
-#                     num_activations += x.numel()
-
-#                 # 计算平均激活值
-#                 mean_activation = activation_sum / num_activations
-
-#                 # 调整权重使得平均激活值为1
-#                 scale_factor = mean_activation
-#                 layer.weight.data /= scale_factor[:, None, None, None]
-
-#                 # 如果下一层是ReLU或者是最后一个卷积层，则跳过
-#                 if i+1 < len(model.features) and isinstance(model.features[i+1], nn.Conv2d):
-#                     next_layer = model.features[i+1]
-#                     # 对下一层权重进行反向缩放
-#                     next_layer.weight.data *= scale_factor[None, :, None, None]
 def rescale_weights(model, dataloader, device=device):
+    model.to(device)
     model.eval()  # Set the model to evaluation mode
     with torch.no_grad():  # No need to track gradients
         # Assume the convolutional layers are named as 'conv1_1', 'conv1_2', etc.
-        conv_layers = [model.conv1_1, model.conv1_2, model.conv2_1, model.conv2_2, 
-                       model.conv3_1, model.conv3_2, model.conv3_3, model.conv3_4,
-                       model.conv4_1, model.conv4_2, model.conv4_3, model.conv4_4,
-                       model.conv5_1, model.conv5_2, model.conv5_3, model.conv5_4]
+        layers = []
+        for name, module in model._modules.items():
+            layers.append(module)
 
-        for i, layer in enumerate(conv_layers):
-            activation_sum = 0.0
-            num_activations = 0
+        for i, layer in enumerate(layers):
+            if isinstance(layer, nn.Conv2d):
+                activation_sum = 0.0
+                num_activations = 0
 
-            for inputs, _ in dataloader:
-                x = inputs.to(device)
-                # Forward pass up to the current layer
-                for j, conv_layer in enumerate(conv_layers):
-                    x = conv_layer(x)
-                    if j == i:
-                        break
+                for inputs in dataloader:
+                    x = inputs.to(device)
+                    # print(x.shape)
+                    # Forward pass up to the current layer
+                    for j in range(i + 2):
+                        x = layers[j](x)
+                        # print(x.shape)
+                    # relu
+                    activation_sum += x.sum().item()
+                    num_activations += x.numel()
 
-                activation_sum += x.sum().item()
-                num_activations += x.numel()
+                # Calculate the mean activation
+                mean_activation = activation_sum / num_activations
 
-            # Calculate the mean activation
-            mean_activation = activation_sum / num_activations
-
-            # Rescale the weights of the current layer
-            layer.weight.data /= mean_activation
-
-            # If there's a subsequent conv layer, rescale its weights inversely
-            if i+1 < len(conv_layers):
-                next_layer = conv_layers[i+1]
-                next_layer.weight.data *= mean_activation
-
-def main():
-    '''
-    rescale the weights of VGG19 model and save the model
-    '''
-    # load the pretrained model
-    vgg19_model = models.vgg19(weights='DEFAULT').to(device)
-
-    for i, layer in enumerate(vgg19_model.features):
-        if isinstance(layer, nn.MaxPool2d):
-            vgg19_model.features[i] = nn.AvgPool2d(kernel_size=2, stride=2, padding=0)
-
-    print('VGG19 model with maxpooling replaced with average pooling:')
-    print(vgg19_model)
-
-    # 指定ImageNet数据集的路径
-    imagenet_data_path = imagenet_path
-
-    # 定义预处理转换
-    transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-
-    # 加载整个ImageNet数据集
-    full_dataset = datasets.ImageFolder(root=imagenet_data_path, transform=transform)
-    # print(len(full_dataset))
-    # 选择子集：这里我们随机选择一定比例的数据作为子集
-    subset_size = len(full_dataset) // 3000  # 假设我们只取数据集的1/3000
-    indices = torch.randperm(len(full_dataset)).tolist()
-    subset_indices = indices[:subset_size]
-
-    # 使用SubsetRandomSampler为我们的子集创建一个sampler
-    sampler = SubsetRandomSampler(subset_indices)
-
-    # 创建DataLoader来加载数据
-    batch_size = 128
-    dataloader = DataLoader(full_dataset, batch_size=batch_size, sampler=sampler)
-    # print(len(dataloader))
-    # flush the stdout buffer
-    # sys.stdout.flush()
-
-    rescale_weights(vgg19_model, dataloader)
-
-    # save the model
-    torch.save(vgg19_model.state_dict(), model_path)
-    print(f'Model saved with path: {model_path}')
+                # Rescale the weights of the current layer
+                layer.weight.data /= mean_activation
 
 
 if __name__ == '__main__':
-    # record the running time
-    # start_time = time.time()
-    # main()
-    # end_time = time.time()
-    # print('Running time: {:.2f} seconds.'.format(end_time - start_time))
-    model = get_vgg19_model(modified=False)
-    # 随机生成图片并输入模型
-    # x = torch.rand(1, 3, 256, 256).to(device)
-    # y = model(x)
-    # # 获取特征图
-    # feature_maps = model.features_maps
-    # print(feature_maps['conv1_1'].shape)
+    
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model = get_vgg19_model().to(device)
+    print(model)
+    # 随机生成一张图片
+    img = torch.rand(1,3,224,224).to(device)
+    model(img)
+
+    feature_maps = model.features_maps
+
+    print(f'feature_maps in different layer: {feature_maps.keys()}')

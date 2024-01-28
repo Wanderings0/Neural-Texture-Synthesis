@@ -1,4 +1,5 @@
 *.pth
 *.jpg
-!pebbles.jpg
+!water.jpg
+!leaf.jpg
 *.txt
