@@ -52,7 +52,7 @@ def get_gram(features_maps):
     return gram_matrix
 
 
-def gram_mse_loss(syn,gt,feature_selection=['conv1_1','conv2_1','conv3_1','conv4_1','conv5_1']):
+def gram_mse_loss(syn,gt,feature_selection=['conv1_1','conv2_1','conv3_1','conv4_1']):
     total_loss = 0
     for key in syn:
         if key not in feature_selection:
@@ -144,7 +144,7 @@ def main():
     
     parser.add_argument('--optimizer', default='Adam', type=str, help='optimize method')
     parser.add_argument('--epoch', default=1000, type=int, help='epoch')
-    parser.add_argument('--lr', default=0.05, type=float, help='learning rate')
+    parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
     parser.add_argument('--device', default='cuda:0', type=str, help='device')
     parser.add_argument('--save_path', default='result.jpg', type=str, help='save path') 
     args = parser.parse_args()

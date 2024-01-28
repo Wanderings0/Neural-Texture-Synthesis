@@ -51,7 +51,6 @@ The texture synthesis is implemented in `texture_synthesis.py`. The file takes t
 | `--gt_path`         | `water.jpg`                                    | `str` | path to ground truth image   |
 | `--pool`            | `max`                                          | `str` | pooling method               |
 | `--rescale`         | `False`                                         | `bool` | rescale weights or not       |
-| `--feature_selection` | `['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1']` | `list` | feature selection            |
 | `--optimize`        | `Adam`                                         | `str` | optimize method              |
 | `--epoch`           | `1000`                                         | `int` | epoch                        |
 | `--lr`              | `0.05`                                         | `float` | learning rate               |
