@@ -21,11 +21,6 @@ from tqdm import tqdm
 import time, sys
 
 
-# modify the path to your own path
-# you can ignore the imagenet_path because the model is already rescaled and saved
-model_path = 'rescaled_vgg19_weights.pth'
-imagenet_path = '/lustre/dataset/imagenet/'
-
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -242,7 +237,7 @@ def rescale_weights(model, dataloader, device=device):
 
 
 if __name__ == '__main__':
-    
+
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = get_vgg19_model().to(device)
     print(model)

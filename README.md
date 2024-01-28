@@ -1,9 +1,11 @@
 # Neural-Texture-Synthesis
 This is a final team project for the Computer Vision course taught by Assistant Professor Pengshuai Wang in the fall term of 2023. The team memebers are Siyuan Yin, Shaoyang Cui, and Xiaohui Zhang.
 
-The website of the tutorial is [Notion](https://fancy-icebreaker-99b.notion.site/Neural-Texture-Synthesis-fa7f4228679b49acb93836b3b6f45f6e)
+The website of the tutorial is [Notion](https://fancy-icebreaker-99b.notion.site/Neural-Texture-Synthesis-fa7f4228679b49acb93836b3b6f45f6e).
 
-![demo result](demo.png)
+We develop a general neural network model, based on the VGG19 architecture, capable of accurately describing and synthesizing a diverse array of textures. We make some modifications on model architecture and meticulously examine the effects of various pooling strategies, rescaling methods, and optimizers. We use gram matrix and mean square error(MSE) as loss function and use optimizer(Adam or LFBGS) to optimize synthesized image. We present a comprehensive series of experiments to illustrate these impacts.
+
+![demo result](imgs/demo.png)
 
 ## 1. Installation
 
@@ -48,17 +50,26 @@ The texture synthesis is implemented in `texture_synthesis.py`. The file takes t
 | Argument            | Default Value                                  | Type  | Description                  |
 |---------------------|------------------------------------------------|-------|------------------------------|
 | `--model`           | `vgg19`                                        | `str` | model name                   |
-| `--gt_path`         | `water.jpg`                                    | `str` | path to ground truth image   |
-| `--pool`            | `max`                                          | `str` | pooling method               |
-| `--rescale`         | `False`                                         | `bool` | rescale weights or not       |
-| `--optimize`        | `Adam`                                         | `str` | optimize method              |
+| `--gt_path`         | `leaf.jpg`                                    | `str` | path to ground truth image   |
+| `--pool`            | `avg`                                          | `str` | pooling method               |
+| `--rescale`         | `True`                                         | `bool` | rescale weights or not       |
+| `--optimizer`        | `Adam`                                         | `str` | optimize method              |
 | `--epoch`           | `1000`                                         | `int` | epoch                        |
 | `--lr`              | `0.05`                                         | `float` | learning rate               |
 | `--device`          | `cuda:0`                                       | `str` | device                       |
 | `--save_path`       | `result.jpg`                                   | `str` | save path                    |
 
 
-You can run the following code to see the result of the texture synthesis. We provide two images for the ground truth image, `water.jpg` and `leaf.jpg`. 
+We provide `leaf.img` as the ground truth image. You can run the following code to see the result of the texture synthesis. 
 ```bash
-python texture_synthesis.py --gt_path water.jpg --pool avg --rescale True --save_path result.jpg
+python texture_synthesis.py --gt_path leaf.jpg --pool avg --rescale True --optimizer Adam --save_path result.jpg
 ```
+and
+```bash
+python texture_synthesis.py --gt_path leaf.jpg --pool avg --rescale True --optimizer LBFGS --save_path result.jpg
+```
+
+If your device has cuda, the first run with Adam is fast. The second run with LFBGS is slower.
+
+The result should be like this:
+![lfbgs](imgs/LBFGS.png)

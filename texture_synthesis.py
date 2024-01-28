@@ -136,10 +136,10 @@ def main():
 
     parser = argparse.ArgumentParser(description='PyTorch VGG19 Training')
     parser.add_argument('--model', default='vgg19', type=str, help='model name')
-    parser.add_argument('--gt_path', default='water.jpg', type=str, help='path to ground truth image')
+    parser.add_argument('--gt_path', default='leaf.jpg', type=str, help='path to ground truth image')
     parser.add_argument('--pool', default='avg', type=str, help='pooling method')
     parser.add_argument('--rescale', default=True, type=bool, help='rescale weights or not')
-    parser.add_argument('--feature_selection', default=['conv1_1','conv2_1','conv3_1','conv4_1','conv5_1'], type=list, help='feature selection')
+    parser.add_argument('--feature_selection', default=['conv1_1','conv2_1','conv3_1','conv4_1'], type=list, help='feature selection')
     
     
     parser.add_argument('--optimizer', default='Adam', type=str, help='optimize method')
@@ -151,9 +151,9 @@ def main():
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     args.device = device
-
+    path = 'imgs/'+args.gt_path
     model = get_vgg19_model(pool=args.pool)
-    gt = read_image(args.gt_path)
+    gt = read_image(path)
     if args.rescale:
         rescale_weights(model,[gt],device)
 
