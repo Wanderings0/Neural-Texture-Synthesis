@@ -5,16 +5,15 @@ calculate gram matrix
 """
 
 import torch
-import torch.nn as nn
 from torchvision import transforms
-from typing import List
 import cv2
 from VGG19 import get_vgg19_model
 import torch
 from tqdm import tqdm
-import PIL.Image as Image
 import torchvision.transforms.functional as TF
 import numpy as np
+from LBFGS import LBFGS, FullBatchLBFGS
+from utils import get_grad
 
 
 def read_image(path):
@@ -75,8 +74,7 @@ def synthesis(model,gt, device=device):
 
     syn = torch.rand(gt.shape)
     syn = syn.to(device).requires_grad_(True)
-    optimizer = torch.optim.Adam([syn], lr=0.5)
-    # oprimizer2 = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam([syn], lr=0.05)
     model(gt)
     gt_grams = get_gram(model.features_maps)
 
@@ -93,18 +91,66 @@ def synthesis(model,gt, device=device):
         optimizer.step()
 
         # 将syn的值限制在0-255之间
-        syn.data = torch.clamp(syn.data,0,255)
+        syn.data = torch.clamp(syn.data,0,1)
         print("epoch: {}, loss: {}".format(i, loss.item()),flush=True)
 
         if i%10 == 0:
             save_image(syn.squeeze(0), "epoch_{}.jpg".format(i))
 
-            
+def get_my_grad(optimizer, syn, gt, model):
+    model(gt)
+    gt_grams = get_gram(model.features_maps)
+    optimizer.zero_grad()
+    model(syn)
+    syn_grams = get_gram(model.features_maps)
+    loss = gram_mse_loss(syn_grams,gt_grams)
+    # model.backward()
+    loss.backward(retain_graph=True)
+    return optimizer._gather_flat_grad(), loss.item()
+
+def synthesis_LBFGS(model,gt, device=device):
+    #生成一个与gt相同大小的随机噪声
+
+    # for param in model.parameters():
+    #     param.requires_grad = False
+    model.to(device)
+    gt = gt.to(device).requires_grad_(False)
+
+    syn = torch.rand(gt.shape)
+    syn = syn.to(device).requires_grad_(True)
+    # optimizer = torch.optim.Adam([syn], lr=0.05)
+    optimizer = FullBatchLBFGS([syn],lr=1.,history_size=10, line_search='Wolfe', debug=True)
+    grad,obj = get_my_grad(optimizer, syn, gt, model)
+    model(gt)
+    gt_grams = get_gram(model.features_maps)
+    epoch = 301
+    for i in tqdm(range(epoch)):
+
+        def closure():
+            optimizer.zero_grad()
+            model(syn)
+            syn_grams = get_gram(model.features_maps)
+            loss = gram_mse_loss(syn_grams,gt_grams)
+            # model.backward()
+            loss.backward(retain_graph=True)
+            return loss
+
+        options = {'closure': closure, 'current_loss': obj}
+        obj, grad, lr, _, _, _, _, _ = optimizer.step(options)
+
+        # optimizer.step()
+        # print(syn.grad)
+        # 将syn的值限制在0-255之间
+        syn.data = torch.clamp(syn.data,0,1)
+
+        if i%10 == 0:
+            save_image(syn.squeeze(0), "epoch_{}.jpg".format(i))
 
 
 if __name__ == '__main__':
-    model = get_vgg19_model(modified=True)
+    model = get_vgg19_model(modified=False)
     gt = read_image("pebbles.jpg")
+    # synthesis_LBFGS(model, gt)
     synthesis(model, gt)
     # size = np.array((2,3))
     # M = np.prod(size)

@@ -1,3 +1,4 @@
 *.pth
 *.jpg
+!pebbles.jpg
 *.txt

@@ -279,68 +279,140 @@ class modifiedVGG19(nn.Module):
         
 
 
-def rescale_weights(model, dataloader):
-    model.eval()
-    with torch.no_grad():
-        for i, layer in enumerate(model.features):
-            if isinstance(layer, nn.Conv2d):
-                # 初始化累加器
-                activation_sum = 0
-                num_activations = 0
-                
-                print('Rescaling weights for layer {}...'.format(i))
-                sys.stdout.flush()
-                for inputs, _ in tqdm(dataloader):
-                    # 仅计算当前层的前向传播结果
-                    x = inputs.to(device)
-                    for j in range(i + 1):
-                        x = model.features[j](x)
-                    
-                    # 累加激活值的总和
-                    activation_sum += x.sum(dim=[0, 2, 3])
-                    num_activations += x.size(0) * x.size(2) * x.size(3)
 
-                # 计算平均激活值
-                mean_activation = activation_sum / num_activations
-
-                # 调整权重使得平均激活值为1
-                scale_factor = mean_activation
-                layer.weight.data /= scale_factor[:, None, None, None]
-
-                # 如果下一层是ReLU或者是最后一个卷积层，则跳过
-                if i+1 < len(model.features) and isinstance(model.features[i+1], nn.Conv2d):
-                    next_layer = model.features[i+1]
-                    # 对下一层权重进行反向缩放
-                    next_layer.weight.data *= scale_factor[None, :, None, None]
 
     
 def get_vgg19_model(modified=True):
 
+    layer_map = {
+        'conv1_1.weight': 'features.0.weight',
+        'conv1_1.bias': 'features.0.bias',
+        'conv1_2.weight': 'features.2.weight',
+        'conv1_2.bias': 'features.2.bias',
+        'conv2_1.weight': 'features.5.weight',
+        'conv2_1.bias': 'features.5.bias',
+        'conv2_2.weight': 'features.7.weight',
+        'conv2_2.bias': 'features.7.bias',
+        'conv3_1.weight': 'features.10.weight',
+        'conv3_1.bias': 'features.10.bias',
+        'conv3_2.weight': 'features.12.weight',
+        'conv3_2.bias': 'features.12.bias',
+        'conv3_3.weight': 'features.14.weight',
+        'conv3_3.bias': 'features.14.bias',
+        'conv3_4.weight': 'features.16.weight',
+        'conv3_4.bias': 'features.16.bias',
+        'conv4_1.weight': 'features.19.weight',
+        'conv4_1.bias': 'features.19.bias',
+        'conv4_2.weight': 'features.21.weight',
+        'conv4_2.bias': 'features.21.bias',
+        'conv4_3.weight': 'features.23.weight',
+        'conv4_3.bias': 'features.23.bias',
+        'conv4_4.weight': 'features.25.weight',
+        'conv4_4.bias': 'features.25.bias',
+        'conv5_1.weight': 'features.28.weight',
+        'conv5_1.bias': 'features.28.bias',
+        'conv5_2.weight': 'features.30.weight',
+        'conv5_2.bias': 'features.30.bias',
+        'conv5_3.weight': 'features.32.weight',
+        'conv5_3.bias': 'features.32.bias',
+        'conv5_4.weight': 'features.34.weight',
+        'conv5_4.bias': 'features.34.bias',
+    }
+
     if modified:
         # load a VGG19 model with rescaled weights ,replace the maxpooling with average pooling and without FC layers
         vgg19_model = modifiedVGG19()
-        keys = list(vgg19_model.state_dict().keys())
-        # print(keys)
+        
         rescaled_weights = torch.load(model_path,map_location=device)
-        for i, key in enumerate(rescaled_weights):
-            if i < len(keys):
-                # print(keys[i],"with weight ", key)
-                vgg19_model.state_dict()[keys[i]] = rescaled_weights[key]
-            else:
-                break
+
+        adapted_weights = {}
+
+        for key in vgg19_model.state_dict().keys():
+            adapted_weights[key] = rescaled_weights[layer_map[key]]
+        print(adapted_weights.keys())
+        vgg19_model.load_state_dict(adapted_weights)
+
     else:
         # load a VGG19 model with pretrained weights without FC layers
         vgg19_model = VGG19()
         pretrained_weights = models.vgg19(pretrained=True).state_dict()
-        keys = list(vgg19_model.state_dict().keys())
-        for i, key in enumerate(pretrained_weights):
-            if i < len(keys):
-                vgg19_model.state_dict()[keys[i]] = pretrained_weights[key]
-            else:
-                break
+        adapted_weights = {}
+
+        for key in vgg19_model.state_dict().keys():
+            adapted_weights[key] = pretrained_weights[layer_map[key]]
+        print(adapted_weights.keys())
+        vgg19_model.load_state_dict(adapted_weights)
+        
         
     return vgg19_model
 
+# def rescale_weights(model, dataloader):
+#     model.eval()
+#     with torch.no_grad():
+#         for i, layer in enumerate(model.features):
+#             if isinstance(layer, nn.Conv2d):
+#                 # 初始化累加器
+#                 activation_sum = 0
+#                 num_activations = 0
+                
+#                 print('Rescaling weights for layer {}...'.format(i))
+#                 sys.stdout.flush()
+#                 for inputs, _ in tqdm(dataloader):
+#                     # 仅计算当前层的前向传播结果
+#                     x = inputs.to(device)
+#                     for j in range(i + 1):
+#                         x = model.features[j](x)
+                    
+#                     # 累加激活值的总和
+#                     activation_sum += x.sum().item()
+#                     num_activations += x.numel()
+
+#                 # 计算平均激活值
+#                 mean_activation = activation_sum / num_activations
+
+#                 # 调整权重使得平均激活值为1
+#                 scale_factor = mean_activation
+#                 layer.weight.data /= scale_factor[:, None, None, None]
+
+#                 # 如果下一层是ReLU或者是最后一个卷积层，则跳过
+#                 if i+1 < len(model.features) and isinstance(model.features[i+1], nn.Conv2d):
+#                     next_layer = model.features[i+1]
+#                     # 对下一层权重进行反向缩放
+#                     next_layer.weight.data *= scale_factor[None, :, None, None]
+def rescale_weights(model, dataloader, device=device):
+    model.eval()  # Set the model to evaluation mode
+    with torch.no_grad():  # No need to track gradients
+        # Assume the convolutional layers are named as 'conv1_1', 'conv1_2', etc.
+        conv_layers = [model.conv1_1, model.conv1_2, model.conv2_1, model.conv2_2, 
+                       model.conv3_1, model.conv3_2, model.conv3_3, model.conv3_4,
+                       model.conv4_1, model.conv4_2, model.conv4_3, model.conv4_4,
+                       model.conv5_1, model.conv5_2, model.conv5_3, model.conv5_4]
+
+        for i, layer in enumerate(conv_layers):
+            activation_sum = 0.0
+            num_activations = 0
+
+            for inputs, _ in dataloader:
+                x = inputs.to(device)
+                # Forward pass up to the current layer
+                for j, conv_layer in enumerate(conv_layers):
+                    x = conv_layer(x)
+                    if j == i:
+                        break
+
+                activation_sum += x.sum().item()
+                num_activations += x.numel()
+
+            # Calculate the mean activation
+            mean_activation = activation_sum / num_activations
+
+            # Rescale the weights of the current layer
+            layer.weight.data /= mean_activation
+
+            # If there's a subsequent conv layer, rescale its weights inversely
+            if i+1 < len(conv_layers):
+                next_layer = conv_layers[i+1]
+                next_layer.weight.data *= mean_activation
 
 def main():
     '''
@@ -398,10 +470,10 @@ if __name__ == '__main__':
     # main()
     # end_time = time.time()
     # print('Running time: {:.2f} seconds.'.format(end_time - start_time))
-    model = get_vgg19_model(modified=True)
+    model = get_vgg19_model(modified=False)
     # 随机生成图片并输入模型
-    x = torch.rand(1, 3, 256, 256).to(device)
-    y = model(x)
-    # 获取特征图
-    feature_maps = model.features_maps
-    print(feature_maps['conv1_1'].shape)
+    # x = torch.rand(1, 3, 256, 256).to(device)
+    # y = model(x)
+    # # 获取特征图
+    # feature_maps = model.features_maps
+    # print(feature_maps['conv1_1'].shape)
