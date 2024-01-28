@@ -74,36 +74,58 @@ def synthesis(model,gt, args):
     syn = torch.rand(gt.shape)
     syn = syn.to(device).requires_grad_(True)
 
-    if args.optimize == 'Adam':
-        optimizer = torch.optim.Adam([syn], lr=args.lr)
-    elif args.optimize == 'LBFGS':
-        optimizer = None
-    else:
-        raise NotImplementedError
-    
-
     model(gt)
     gt_grams = get_gram(model.features_maps)
 
     epoch = args.epoch
 
-    for i in tqdm(range(epoch)):
+    if args.optimizer == 'Adam':
+        optimizer = torch.optim.Adam([syn], lr=args.lr)
+        for i in tqdm(range(epoch)):
         # print(tar.grad)
-        optimizer.zero_grad()
-        model(syn)
-        syn_grams = get_gram(model.features_maps)
-        loss = gram_mse_loss(syn_grams,gt_grams,args.feature_selection)
-        # model.backward()
-        loss.backward(retain_graph=True)
+            optimizer.zero_grad()
+            model(syn)
+            syn_grams = get_gram(model.features_maps)
+            loss = gram_mse_loss(syn_grams,gt_grams,args.feature_selection)
+            # model.backward()
+            loss.backward(retain_graph=True)
 
-        optimizer.step()
+            optimizer.step()
 
-        # 将syn的值限制在0-255之间
-        syn.data = torch.clamp(syn.data,0,1)
-        # print("epoch: {}, loss: {}".format(i, loss.item()),flush=True)
+            # 将syn的值限制在0-255之间
+            syn.data = torch.clamp(syn.data,0,1)
+            # print("epoch: {}, loss: {}".format(i, loss.item()),flush=True)
 
-        if (i+1)%100 == 0:
-            save_image(syn.squeeze(0), "epoch_{}.jpg".format(i+1))
+            if (i+1)%100 == 0:
+                save_image(syn.squeeze(0), "epoch_{}.jpg".format(i+1))
+    elif args.optimizer == 'LBFGS':
+        optimizer = torch.optim.LBFGS([syn], lr=args.lr)
+
+        def closure():
+            optimizer.zero_grad()
+            model(syn)
+            syn_grams = get_gram(model.features_maps)
+            loss = gram_mse_loss(syn_grams,gt_grams,args.feature_selection)
+            # model.backward()
+            loss.backward(retain_graph=True)
+
+            return loss
+        
+        for i in tqdm(range(epoch)):
+            # print(tar.grad)
+
+            optimizer.step(closure)
+
+            # 将syn的值限制在0-255之间
+            syn.data = torch.clamp(syn.data,0,1)
+            # print("epoch: {}, loss: {}".format(i, loss.item()),flush=True)
+
+            if (i+1)%100 == 0:
+                save_image(syn.squeeze(0), "epoch_{}.jpg".format(i+1))
+    else:
+        raise NotImplementedError
+    
+    
 
     save_image(syn.squeeze(0), args.save_path)
 
@@ -120,7 +142,7 @@ def main():
     parser.add_argument('--feature_selection', default=['conv1_1','conv2_1','conv3_1','conv4_1','conv5_1'], type=list, help='feature selection')
     
     
-    parser.add_argument('--optimize', default='Adam', type=str, help='optimize method')
+    parser.add_argument('--optimizer', default='Adam', type=str, help='optimize method')
     parser.add_argument('--epoch', default=1000, type=int, help='epoch')
     parser.add_argument('--lr', default=0.05, type=float, help='learning rate')
     parser.add_argument('--device', default='cuda:0', type=str, help='device')
