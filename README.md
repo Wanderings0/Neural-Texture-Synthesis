@@ -73,3 +73,8 @@ If your device has cuda, the first run with Adam is fast. The second run with LF
 
 The result should be like this:
 ![lfbgs](imgs/LBFGS.png)
+
+
+HI there! This is **spidermonk7**, I'm also an author but just being lazy to upload files, so my files are also uploaded by my dude **Wanderings0**.
+Just creating this to be a contributor!
+Wish u all a good day. 
